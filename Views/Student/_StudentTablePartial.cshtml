@@ -1,0 +1,93 @@
+﻿@model IEnumerable<StudentTest.Models.MstStudent>
+
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>Student Name</th>
+            <th>Subject</th>
+            <th>Grade</th>
+            <th>Remarks</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var s in Model)
+        {
+            <tr data-id="@s.StudentKey">
+                <td>@s.StudentKey</td>
+                <td class="student-name">@s.StudentName</td>
+                <td class="student-subject">@s.Subject?.SubjectName</td>
+                <td class="student-grade">@s.Grade</td>
+                <td class="@(s.Remarks == "PASS" ? "text-success" : "text-danger")">@s.Remarks</td>
+                <td>
+                    <button class="btn btn-sm btn-primary edit-btn" data-id="@s.StudentKey"><i class="bi bi-pencil"></i> Edit</button>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-danger delete-btn" data-id="@s.StudentKey"><i class="bi bi-trash"></i> Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Pagination Linkss -->
+@if (ViewBag.TotalPages > 1)
+{
+    <nav aria-label="Student pagination">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                <a href="#" class="page-link page-btn" data-page="@(ViewBag.CurrentPage - 1)">Previous</a>
+            </li>
+
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <a href="#" class="page-link page-btn" data-page="@i">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                <a href="#" class="page-link page-btn" data-page="@(ViewBag.CurrentPage + 1)">Next</a>
+            </li>
+        </ul>
+    </nav>
+}
+
+
+<script>
+    $(document).on('click', '.page-btn', function (e) {
+    e.preventDefault();
+    const page = $(this).data('page');
+
+    $.ajax({
+        url: '/Student/Index',
+        type: 'GET',
+        data: {
+            page: page,
+            search: $('input[name="search"]').val(),
+            filter: $('select[name="filter"]').val()
+        },
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        success: function (html) {
+            $('#studentTableContainer').html(html);
+            $('html, body').animate({ scrollTop: 0 }, 200); // scroll to top of table
+        },
+        error: function () {
+            showToast("Error loading students", "error");
+        }
+    });
+});</script>
+
+
+<style>
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+    .pagination .page-link {
+        color: #0d6efd;
+    }
+</style>

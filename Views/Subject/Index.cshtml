@@ -1,0 +1,208 @@
+﻿@model IEnumerable<MstSubject>
+@{
+    ViewData["Title"] = "Student Subject";
+}
+
+<h2>Student Grades</h2>
+
+
+
+<!-- Create Subject Button -->
+<button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#modalCreateSubject">
+    Create Subject
+</button>
+
+
+<!-- Search -->
+<form method="get" class="mb-3 d-flex">
+    <input type="text" name="search" placeholder="Search by name" value="@ViewBag.Search" class="form-control me-2" />
+    <button class="btn btn-primary">Search</button>
+</form>
+
+
+<div id="subjectTableContainer">
+    @await Html.PartialAsync("_SubjectTablePartial", Model)
+</div>
+
+<!-- Create Subject Modal -->
+<div class="modal fade" id="modalCreateSubject" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Add Subject</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCreateSubject">
+                    <div class="mb-3">
+                        <label>Subject Name</label>
+                        <input type="text" name="SubjectName" class="form-control" required />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-success" id="btnCreateSubject">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Edit Subject Modal Placeholder -->
+<div id="modal-placeholder"></div>
+
+<!-- Delete Subject Modal -->
+<div class="modal fade" id="modalDeleteSubject" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Delete Subject</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this subject?</p>
+                <input type="hidden" id="deleteSubjectKey" />
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-danger" id="btnDeleteSubject">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts {
+
+    <script>
+
+
+        // --- Create Subject ---
+        $('#btnCreateSubject').click(function () {
+            var form = $('#formCreateSubject');
+            $.ajax({
+                url: '/Subject/Create',
+                type: 'POST',
+                data: form.serialize(),
+                success: function (res) {
+                    if (res.success) {
+                        // Blur active element to avoid focus issue
+                        document.activeElement.blur();
+
+                        // Hide modal safely
+                        var modalEl = document.getElementById('modalCreateSubject');
+                        var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                        modal.hide();
+
+                        // Remove backdrop if stuck
+                        $('.modal-backdrop').remove();
+
+                        // Append new row
+                        if (res.subject) {
+                            $('table tbody').append(`
+                        <tr data-id="${res.subject.subjectKey}">
+                            <td>${res.subject.subjectKey}</td>
+                            <td class="subject-name">${res.subject.subjectName}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary edit-btn" data-id="${res.subject.subjectKey}">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger delete-btn" data-id="${res.subject.subjectKey}">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                        }
+
+                        // Reset form
+                        form[0].reset();
+
+                        // Show toast
+                        showToast(res.message || "Subject created successfully");
+                    } else {
+                        alert(res.message || "Error creating subject");
+                    }
+                },
+                error: function () {
+                    alert("Error creating subject");
+                }
+            });
+        });
+
+
+
+
+
+        // --- Edit Subject ---
+        $(document).on('click', '.edit-btn', function () {
+            var id = $(this).data('id');
+            $.get('/Subject/Edit', { id: id }, function (html) {
+                $('#modal-placeholder').html(html);
+                $('#editFormModal').modal('show'); // Make sure edit form modal has ID "editFormModal"
+            });
+        });
+
+        $(document).on('submit', '#editForm', function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: '/Subject/Edit',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (res) {
+                    if (res.success) {
+                        $('#editFormModal').modal('hide');
+
+                        // Update table row
+                        var id = $('#editForm input[name="SubjectKey"]').val();
+                        $('tr[data-id="' + id + '"] .subject-name').text($('#editForm input[name="SubjectName"]').val());
+
+                        showToast(res.message || "Subject updated successfully");
+                    } else {
+                        alert(res.message || "Error updating subject");
+                    }
+                },
+                error: function () {
+                    alert("Error updating subject");
+                }
+            });
+        });
+
+
+        // --- Delete Subject ---
+        $(document).on('click', '.delete-btn', function () {
+            var id = $(this).data('id');
+            $('#deleteSubjectKey').val(id);
+            var modal = new bootstrap.Modal(document.getElementById('modalDeleteSubject'));
+            modal.show();
+        });
+
+        $('#btnDeleteSubject').click(function () {
+            var id = $('#deleteSubjectKey').val();
+            $.ajax({
+                url: '/Subject/Delete',
+                type: 'DELETE',
+                data: { SubjectKey: id },
+                success: function (res) {
+                    if (res.success) {
+                        $('#modalDeleteSubject').modal('hide');
+                        $('tr[data-id="' + id + '"]').remove();
+                        showToast(res.message || "Subject deleted successfully");
+                    } else {
+                        alert(res.message || "Error deleting subject");
+                    }
+                },
+                error: function () {
+                    alert("Error deleting subject");
+                }
+            });
+        });
+
+
+    </script>
+}
