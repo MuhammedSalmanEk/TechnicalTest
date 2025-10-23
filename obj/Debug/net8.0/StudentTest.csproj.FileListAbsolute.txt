@@ -168,3 +168,8 @@
 /Users/muhammedsalmanek/Documents/dotnetprojects/StudentTest/StudentTest/obj/Debug/net8.0/StudentTest.pdb
 /Users/muhammedsalmanek/Documents/dotnetprojects/StudentTest/StudentTest/obj/Debug/net8.0/StudentTest.genruntimeconfig.cache
 /Users/muhammedsalmanek/Documents/dotnetprojects/StudentTest/StudentTest/obj/Debug/net8.0/ref/StudentTest.dll
+/Users/muhammedsalmanek/Documents/dotnetprojects/StudentTest/StudentTest/bin/Debug/net8.0/out/web.config
+/Users/muhammedsalmanek/Documents/dotnetprojects/StudentTest/StudentTest/bin/Debug/net8.0/out/appsettings.Development.json
+/Users/muhammedsalmanek/Documents/dotnetprojects/StudentTest/StudentTest/bin/Debug/net8.0/out/appsettings.json
+/Users/muhammedsalmanek/Documents/dotnetprojects/StudentTest/StudentTest/bin/Debug/net8.0/out/StudentTest.deps.json
+/Users/muhammedsalmanek/Documents/dotnetprojects/StudentTest/StudentTest/bin/Debug/net8.0/out/StudentTest.runtimeconfig.json
